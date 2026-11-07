@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>מנוע התאמה, אב טיפוס עיצוב</title>
+<style>
+  :root {
+    --bg-1: #8fa3a6;
+    --bg-2: #6f8588;
+    --card: #5f7b7b;
+    --card-edge: #4d6767;
+    --line: #ffffff;
+    --text: #ffffff;
+    --muted: #d6e2e2;
+    --match: #b9e3d4;
+    --shadow-soft: 0 10px 24px rgba(20, 36, 38, 0.22);
+    --shadow-deep: 0 28px 48px rgba(20, 36, 38, 0.38);
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg-1: #3f5355;
+      --bg-2: #2b3c3e;
+      --card: #3a4f50;
+      --card-edge: #2c3d3e;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg-1: #3f5355;
+    --bg-2: #2b3c3e;
+    --card: #3a4f50;
+    --card-edge: #2c3d3e;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(ellipse at 30% 10%, var(--bg-1), var(--bg-2) 70%);
+    color: var(--text);
+    font-family: "Heebo", "Segoe UI", system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+  /* טקסטורת נייר מטושטש */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    opacity: .6;
+  }
+
+  .wrap { max-width: 980px; margin: 0 auto; padding: 32px 16px 56px; position: relative; }
+  header { display: grid; gap: 10px; margin-bottom: 28px; }
+  h1 { font-size: clamp(22px, 4vw, 34px); margin: 0; font-weight: 700; letter-spacing: .02em; }
+  .lede { color: var(--muted); margin: 0; font-size: 15px; line-height: 1.7; max-width: 60ch; }
+
+  /* שורת בוררים בלי מסגרת: נבחר בלבן מודגש, השאר מטושטשים */
+  .chips { display: flex; gap: 18px; flex-wrap: wrap; margin: 6px 0 26px; }
+  .chip {
+    background: none; border: 0; padding: 4px 0; cursor: pointer;
+    color: var(--muted); opacity: .7; font: inherit; font-size: 15px;
+    text-shadow: 0 2px 6px rgba(0,0,0,.25);
+    transition: opacity .25s var(--ease), transform .25s var(--ease);
+  }
+  .chip:hover { opacity: 1; transform: translateY(-2px); }
+  .chip[aria-pressed="true"] { color: var(--text); opacity: 1; font-weight: 700; }
+  .chip:focus-visible, .btn:focus-visible, .card:focus-visible, .ghost:focus-visible {
+    outline: 2px solid var(--text); outline-offset: 4px;
+  }
+
+  .grid {
+    display: grid; gap: 28px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    perspective: 1200px;
+  }
+  @media (max-width: 640px) {
+    .grid { grid-template-columns: 1fr; gap: 20px; }
+    .wrap { padding-inline: 16px; }
+  }
+
+  /* כרטיס: עומק, צל כפול, ריחוף תלת־ממדי לפי העכבר */
+  .card {
+    position: relative;
+    aspect-ratio: 9 / 15.5;
+    max-height: 560px;
+    border-radius: 22px;
+    background:
+      linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,0) 40%),
+      var(--card);
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 0 var(--card-edge);
+    padding: 22px 22px 20px;
+    display: flex; flex-direction: column;
+    transform-style: preserve-3d;
+    transform: translateY(0) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transition: transform .6s var(--ease), box-shadow .6s var(--ease);
+    opacity: 0;
+    animation: rise .9s var(--ease) forwards;
+    cursor: pointer;
+    text-align: right;
+    color: var(--text);
+    font: inherit;
+    width: 100%;
+  }
+  .card:nth-child(2) { animation-delay: .12s; }
+  .card:nth-child(3) { animation-delay: .24s; }
+  .card:nth-child(4) { animation-delay: .36s; }
+  .card:hover, .card:focus-visible {
+    --lift: -10px;
+    transform: translateY(var(--lift)) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255,255,255,.22), inset 0 -2px 0 var(--card-edge);
+  }
+  /* שכבת זכוכית פנימית שזזה עם הכרטיס: עומק נוסף */
+  .card::after {
+    content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+    background: radial-gradient(circle at var(--mx, 70%) var(--my, 10%), rgba(255,255,255,.18), transparent 45%);
+    transition: opacity .4s var(--ease);
+  }
+
+  .top { display: flex; justify-content: space-between; align-items: center; }
+  .label { font-size: 13px; letter-spacing: .24em; text-transform: none; font-weight: 600; color: var(--text); }
+  .glyph { width: 30px; height: 30px; }
+  .glyph path, .glyph polygon, .glyph line { fill: none; stroke: var(--line); stroke-width: 1.4; }
+
+  .art { flex: 1; display: grid; place-items: center; padding: 10px 0; }
+  .art svg { width: 84%; max-height: 300px; overflow: visible; }
+  .art .draw path, .art .draw rect, .art .draw ellipse, .art .draw line, .art .draw circle {
+    fill: none; stroke: var(--line); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    stroke-dasharray: 1000; stroke-dashoffset: 1000;
+    animation: draw 2.2s var(--ease) forwards;
+  }
+  .card:nth-child(2) .art .draw path, .card:nth-child(2) .art .draw rect,
+  .card:nth-child(2) .art .draw line { animation-delay: .25s; }
+  .card:nth-child(3) .art .draw path, .card:nth-child(3) .art .draw ellipse { animation-delay: .35s; }
+  .card:nth-child(4) .art .draw path, .card:nth-child(4) .art .draw rect { animation-delay: .45s; }
+  .art svg .float { animation: float 6s ease-in-out infinite; transform-origin: center; }
+
+  .foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+  .meta { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: 13px; color: var(--text); line-height: 1.5; direction: ltr; text-align: right; }
+  .meta b { display: block; font-size: 17px; color: var(--text); font-weight: 600; }
+  .badge { display: inline-flex; gap: 8px; }
+  .btn {
+    width: 44px; height: 40px; border: 1px solid var(--line); border-radius: 0; background: transparent;
+    display: grid; place-items: center; cursor: pointer; padding: 0;
+    transition: transform .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+    box-shadow: 0 4px 10px rgba(0,0,0,.18);
+  }
+  .btn svg { width: 20px; height: 20px; }
+  .btn path, .btn rect, .btn circle, .btn polygon { fill: none; stroke: var(--line); stroke-width: 1.4; }
+  .btn:hover { transform: translateY(-3px); background: rgba(255,255,255,.12); box-shadow: 0 8px 16px rgba(0,0,0,.26); }
+  .btn:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,.25); }
+
+  /* תגית התאמה: צבע עם משמעות (מינט = התאמה גבוהה) */
+  .match { font-size: 12px; color: var(--match); font-weight: 700; }
+
+  /* אזור הסבר קבוע: לא מוצג בנייד בלי לחיצה */
+  .ghost {
+    margin-top: 40px; background: none; border: 0; color: var(--muted); cursor: pointer; font: inherit; font-size: 14px;
+    text-decoration: underline; text-underline-offset: 4px;
+  }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+  @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    .art .draw path, .art .draw rect, .art .draw ellipse, .art .draw line, .art .draw circle { stroke-dashoffset: 0; }
+    .card { opacity: 1; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <h1>מנוע התאמה לטכנולוגיה מסייעת</h1>
+    <p class="lede">כל כרטיס הוא פתרון אחד. הקו הלבן מסמן את הפתרון, והמספרים מסמנים את רמת ההתאמה לצורך שנבחר.</p>
+  </header>
+
+  <nav class="chips" role="group" aria-label="סינון לפי תחום">
+    <button class="chip" aria-pressed="true">הכול</button>
+    <button class="chip" aria-pressed="false">ראייה</button>
+    <button class="chip" aria-pressed="false">קשב וריכוז</button>
+    <button class="chip" aria-pressed="false">כתיבה</button>
+  </nav>
+
+  <section class="grid" aria-label="פתרונות מוצעים">
+    <!-- כרטיס 1: High-Tech, ראייה (תוכנת הגדלה) -->
+    <article class="card" tabindex="0">
+      <div class="top">
+        <span class="label">ראייה</span>
+        <svg class="glyph" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 6v18M14 6v18M20 6v18M5 12h20M5 18h20"/></svg>
+      </div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 200" class="draw float">
+          <rect x="40" y="30" width="160" height="110" rx="6"/>
+          <rect x="60" y="50" width="120" height="70" rx="2"/>
+          <line x1="90" y1="158" x2="150" y2="158"/>
+          <path d="M120 140 L120 158"/>
+          <path d="M30 172 L210 172"/>
+          <path d="M70 84 L110 84 M70 98 L140 98"/>
+        </svg>
+      </div>
+      <div class="foot">
+        <div class="meta"><span class="match">התאמה גבוהה</span><b>87</b></div>
+        <div class="badge">
+          <button class="btn" aria-label="הוסף לתיק"><svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+          <button class="btn" aria-label="פתח כרטיס"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <!-- כרטיס 2: Low-Tech, קשב וריכוז (לוח תכנון) -->
+    <article class="card" tabindex="0">
+      <div class="top">
+        <span class="label">קשב וריכוז</span>
+        <svg class="glyph" viewBox="0 0 30 30" aria-hidden="true"><polygon points="15,4 25,10 25,20 15,26 5,20 5,10"/></svg>
+      </div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 200" class="draw float">
+          <rect x="30" y="40" width="180" height="26" rx="2"/>
+          <rect x="30" y="76" width="180" height="26" rx="2"/>
+          <rect x="30" y="112" width="180" height="26" rx="2"/>
+          <line x1="70" y1="40" x2="70" y2="138"/>
+          <line x1="110" y1="40" x2="110" y2="138"/>
+          <line x1="150" y1="40" x2="150" y2="138"/>
+        </svg>
+      </div>
+      <div class="foot">
+        <div class="meta"><span class="match">התאמה בינונית</span><b>64</b></div>
+        <div class="badge">
+          <button class="btn" aria-label="הוסף לתיק"><svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+          <button class="btn" aria-label="פתח כרטיס"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <!-- כרטיס 3: Low-Tech, ראייה (דף שורות מודגשות) -->
+    <article class="card" tabindex="0">
+      <div class="top">
+        <span class="label">ראייה</span>
+        <svg class="glyph" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="9"/><path d="M15 6v18"/></svg>
+      </div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 200" class="draw float">
+          <path d="M120 176 C120 120, 120 90, 120 40"/>
+          <path d="M120 96 C100 80, 80 84, 66 70 C84 62, 104 72, 120 96"/>
+          <path d="M120 84 C140 66, 162 70, 176 56 C158 48, 138 58, 120 84"/>
+          <ellipse cx="120" cy="40" rx="28" ry="18"/>
+          <path d="M96 40 C100 30, 140 30, 144 40"/>
+        </svg>
+      </div>
+      <div class="foot">
+        <div class="meta"><span class="match">התאמה גבוהה</span><b>79</b></div>
+        <div class="badge">
+          <button class="btn" aria-label="הוסף לתיק"><svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+          <button class="btn" aria-label="פתח כרטיס"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12"/></svg></button>
+        </div>
+      </div>
+    </article>
+
+    <!-- כרטיס 4: High-Tech, כתיבה (הכתבה מוקלדת) -->
+    <article class="card" tabindex="0">
+      <div class="top">
+        <span class="label">כתיבה</span>
+        <svg class="glyph" viewBox="0 0 30 30" aria-hidden="true"><path d="M8 22 L22 8 M18 8 L22 12"/></svg>
+      </div>
+      <div class="art" aria-hidden="true">
+        <svg viewBox="0 0 240 200" class="draw float">
+          <rect x="50" y="30" width="140" height="150" rx="6"/>
+          <line x1="70" y1="60" x2="170" y2="60"/>
+          <line x1="70" y1="84" x2="170" y2="84"/>
+          <line x1="70" y1="108" x2="150" y2="108"/>
+          <circle cx="170" cy="150" r="16"/>
+          <path d="M164 150 L168 154 L176 146"/>
+        </svg>
+      </div>
+      <div class="foot">
+        <div class="meta"><span class="match">התאמה נמוכה</span><b>41</b></div>
+        <div class="badge">
+          <button class="btn" aria-label="הוסף לתיק"><svg viewBox="0 0 20 20"><path d="M10 4v12M4 10h12"/></svg></button>
+          <button class="btn" aria-label="פתח כרטיס"><svg viewBox="0 0 20 20"><rect x="4" y="4" width="12" height="12"/></svg></button>
+        </div>
+      </div>
+    </article>
+  </section>
+
+  <button class="ghost" type="button">איך משתמשים</button>
+</main>
+
+<script>
+  // הטיה תלת־ממדית לפי מיקום העכבר, בלי להפריע לגלילה במובייל
+  const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (finePointer && !reduce) {
+    document.querySelectorAll(".card").forEach(card => {
+      card.addEventListener("pointermove", e => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        card.style.setProperty("--ry", ((x - 0.5) * 10).toFixed(2) + "deg");
+        card.style.setProperty("--rx", ((0.5 - y) * 8).toFixed(2) + "deg");
+        card.style.setProperty("--mx", (x * 100).toFixed(1) + "%");
+        card.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+      });
+      card.addEventListener("pointerleave", () => {
+        card.style.setProperty("--rx", "0deg");
+        card.style.setProperty("--ry", "0deg");
+      });
+    });
+  }
+  // בוררים: מצב נבחר נשמר ונגזר מהמבנה
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", "false"));
+      chip.setAttribute("aria-pressed", "true");
+    });
+  });
+</script>
+</body>
+</html>
