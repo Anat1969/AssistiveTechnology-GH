@@ -1,8 +1,4 @@
-<!doctype html>
-<html lang="he" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="claude:viewport-fit-sides" content="cover">
 <title>מנוע התאמה, אב טיפוס</title>
 <style>
   :root {
@@ -38,7 +34,8 @@
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
   }
 
-  .wrap { max-width: 980px; margin: 0 auto; padding: 28px 16px 56px; position: relative; }
+  :root { direction: rtl; }
+  .wrap { max-width: 980px; margin: 0 auto; padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); position: relative; }
 
   /* פס תיק: הקשר הסטודנט לפני ההמלצות */
   .case {
@@ -69,7 +66,7 @@
   }
 
   .grid { display: grid; gap: 28px; grid-template-columns: repeat(2, minmax(0, 1fr)); perspective: 1200px; }
-  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; gap: 20px; } .wrap { padding-inline: 16px; } }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; gap: 20px; } }
 
   .card {
     position: relative; min-height: 470px; border-radius: 22px;
@@ -136,6 +133,18 @@
     text-decoration: underline; text-underline-offset: 4px;
   }
 
+  dialog {
+    background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,0) 40%), var(--card);
+    color: var(--text); border: 0; border-radius: 22px; max-width: min(92vw, 480px); padding: 26px;
+    box-shadow: var(--shadow-deep);
+  }
+  dialog::backdrop { background: rgba(20, 36, 38, .5); }
+  dialog h2 { margin: 0 0 12px; font-size: 20px; }
+  dialog p { line-height: 1.7; margin: 0 0 12px; font-size: 15px; }
+  .card.in-file { box-shadow: var(--shadow-soft), 0 0 0 2px var(--match), inset 0 1px 0 rgba(255,255,255,.18); }
+  .btn[aria-pressed="true"] { background: var(--line); }
+  .btn[aria-pressed="true"] path, .btn[aria-pressed="true"] rect { stroke: var(--card); }
+
   @keyframes rise { from { opacity: 0; transform: translateY(28px) scale(.98); } to { opacity: 1; transform: none; } }
   @keyframes draw { to { stroke-dashoffset: 0; } }
   @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
@@ -145,9 +154,7 @@
     .card { opacity: 1; }
   }
 </style>
-</head>
-<body>
-<main class="wrap">
+<main class="wrap" lang="he">
 
   <!-- פס תיק: נתוני הסטודנט לפני ההמלצות. מזהה פנימי בלבד, בלי שם מלא -->
   <section class="case" aria-label="פרטי התיק">
@@ -155,6 +162,7 @@
     <div><span class="k">תחום</span><span class="v">קשב וריכוז, ראייה</span></div>
     <div><span class="k">סביבה</span><span class="v">הרצאה, מבחן</span></div>
     <div><span class="k">תקציב</span><span class="v empty">לא הוזן</span></div>
+    <div><span class="k">בתיק</span><span class="v" id="count" aria-live="polite">0</span></div>
   </section>
 
   <h1>המלצות לתיק</h1>
@@ -276,8 +284,14 @@
     </article>
   </section>
 
-  <button class="ghost" type="button">איך משתמשים</button>
+  <button class="ghost" type="button" id="how">איך משתמשים</button>
 </main>
+
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <h2 id="dlg-title"></h2>
+  <div id="dlg-body"></div>
+  <button class="ghost" type="button" id="dlg-close">סגירה</button>
+</dialog>
 
 <script>
   const finePointer = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -299,6 +313,49 @@
       });
     });
   }
+  // הוספה לתיק: מסמנת את הכרטיס, מעדכנת את המונה ואת מצב הכפתור
+  const dlg = document.getElementById("dlg");
+  const countEl = document.getElementById("count");
+  const refreshCount = () => {
+    const n = document.querySelectorAll(".card.in-file").length;
+    countEl.textContent = n;
+  };
+  document.querySelectorAll('.btn[aria-label="הוסף לתיק"]').forEach(btn => {
+    btn.setAttribute("aria-pressed", "false");
+    btn.addEventListener("click", () => {
+      const card = btn.closest(".card");
+      const on = !card.classList.contains("in-file");
+      card.classList.toggle("in-file", on);
+      btn.setAttribute("aria-pressed", String(on));
+      btn.setAttribute("aria-label", on ? "הוסר מהתיק" : "הוסף לתיק");
+      refreshCount();
+    });
+  });
+
+  // פרטים: פותח חלון עם נימוק ומצב אימות של אותו כרטיס
+  document.querySelectorAll('.btn[aria-label="פרטים"]').forEach(btn => {
+    btn.addEventListener("click", () => {
+      const card = btn.closest(".card");
+      document.getElementById("dlg-title").textContent = card.querySelector(".name").textContent;
+      document.getElementById("dlg-body").innerHTML =
+        "<p>" + card.querySelector(".latin").textContent + "</p>" +
+        "<p>" + card.querySelector(".fit").textContent + "</p>" +
+        "<p>" + card.querySelector(".verify").textContent + ". הציון לדוגמה בלבד, לפני חישוב המנוע.</p>";
+      dlg.showModal();
+    });
+  });
+
+  // איך משתמשים: שלושה צעדים קצרים
+  document.getElementById("how").addEventListener("click", () => {
+    document.getElementById("dlg-title").textContent = "איך משתמשים";
+    document.getElementById("dlg-body").innerHTML =
+      "<p>1. בוחרים תחום בבורר. הכרטיסים מתסננים.</p>" +
+      "<p>2. הוסף לתיק מוסיף את ההמלצה לתיק הסטודנט, ומעדכן את המונה בפס התיק.</p>" +
+      "<p>3. פרטים פותח את הנימוק ואת מצב האימות של הפריט.</p>";
+    dlg.showModal();
+  });
+  document.getElementById("dlg-close").addEventListener("click", () => dlg.close());
+
   // סינון לפי תחום: הכרטיסים הלא רלוונטיים מוסתרים
   document.querySelectorAll(".chip").forEach(chip => {
     chip.addEventListener("click", () => {
@@ -309,5 +366,3 @@
     });
   });
 </script>
-</body>
-</html>
