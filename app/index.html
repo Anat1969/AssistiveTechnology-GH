@@ -1,0 +1,689 @@
+<meta name="claude:viewport-fit-sides" content="cover">
+<title>מנוע התאמה לטכנולוגיה מסייעת</title>
+<style>
+  /* פריסה: מסך תיק לרכז נגישות. מבנה קבוע, תוכן משתנה לפי הבחירה. */
+  :root {
+    --bg-1: #8fa3a6; --bg-2: #6f8588; --card: #5f7b7b; --card-edge: #4d6767;
+    --line: #ffffff; --text: #ffffff; --muted: #d6e2e2; --match: #b9e3d4; --warn: #f3d9a4;
+    --field: rgba(255,255,255,.12); --focus: #ffffff;
+    --shadow-soft: 0 10px 24px rgba(20,36,38,.22); --shadow-deep: 0 28px 48px rgba(20,36,38,.38);
+    --ease: cubic-bezier(.2,.7,.2,1); --fs: 16px;
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg-1: #3f5355; --bg-2: #2b3c3e; --card: #3a4f50; --card-edge: #2c3d3e; } }
+  :root[data-theme="dark"] { --bg-1: #3f5355; --bg-2: #2b3c3e; --card: #3a4f50; --card-edge: #2c3d3e; }
+  :root[data-contrast="high"] { --bg-1: #1d2b2c; --bg-2: #1d2b2c; --card: #0f1a1b; --card-edge: #ffffff; --muted: #ffffff; --match: #9ff0cf; --warn: #ffe39a; }
+  :root[data-size="large"] { --fs: 19px; }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    min-height: 100vh; background: radial-gradient(ellipse at 30% 10%, var(--bg-1), var(--bg-2) 70%);
+    color: var(--text); font: var(--fs)/1.6 "Heebo", "Segoe UI", system-ui, sans-serif; direction: rtl; overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; opacity: .5;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .07 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  a { color: var(--text); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+  .skip { position: absolute; top: -60px; right: 8px; background: var(--card); padding: 8px 12px; z-index: 20; }
+  .skip:focus { top: 8px; }
+
+  .wrap { max-width: 1000px; margin: 0 auto; padding-block: 22px 60px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); position: relative; }
+  header.top { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,.35); margin-bottom: 22px; }
+  .brand { font-weight: 700; font-size: 1.05em; text-decoration: none; }
+  nav.menu { display: flex; flex-wrap: wrap; gap: 16px; }
+  nav.menu a { text-decoration: none; color: var(--muted); padding: 4px 0; }
+  nav.menu a[aria-current="page"] { color: var(--text); font-weight: 700; border-bottom: 2px solid var(--text); }
+  h1 { font-size: 1.6em; margin: 0 0 6px; line-height: 1.3; text-wrap: balance; }
+  h2 { font-size: 1.2em; margin: 22px 0 8px; }
+  p { margin: 0 0 10px; }
+  .lede { color: var(--muted); max-width: 66ch; }
+  .muted { color: var(--muted); font-size: .92em; }
+  .warn { color: var(--warn); }
+  .panel { background: linear-gradient(160deg, rgba(255,255,255,.12), rgba(255,255,255,0) 40%), var(--card); border-radius: 20px; padding: 20px; box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.18); }
+  .stack { display: grid; gap: 14px; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .grid2 { display: grid; gap: 18px; grid-template-columns: repeat(2, minmax(0,1fr)); }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 18px; }
+  .kv dt { color: var(--muted); }
+  .kv dd { margin: 0; }
+  .num { font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; direction: ltr; font-variant-numeric: tabular-nums; }
+
+  /* כפתורים: מרובעים, מסגרת דקה */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 8px 16px; border: 1px solid var(--line); border-radius: 0;
+    background: transparent; color: var(--text); font: inherit; cursor: pointer; text-decoration: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,.18); transition: transform .25s var(--ease), background .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.12); box-shadow: 0 8px 16px rgba(0,0,0,.26); }
+  .btn:active { transform: translateY(1px); box-shadow: inset 0 2px 4px rgba(0,0,0,.25); }
+  .btn.primary { background: var(--line); color: var(--card); font-weight: 700; }
+  .btn[aria-disabled="true"], .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+  .btn.small { min-height: 36px; padding: 4px 12px; font-size: .9em; }
+
+  /* בוררים בלי מסגרת: נבחר לבן ומודגש */
+  .chips { display: flex; flex-wrap: wrap; gap: 14px 20px; }
+  .chip { background: none; border: 0; padding: 6px 0; cursor: pointer; color: var(--muted); opacity: .75; font: inherit; text-shadow: 0 2px 6px rgba(0,0,0,.25); transition: opacity .25s var(--ease), transform .25s var(--ease); }
+  .chip:hover { opacity: 1; transform: translateY(-2px); }
+  .chip[aria-pressed="true"] { color: var(--text); opacity: 1; font-weight: 700; }
+
+  /* שדות */
+  label.field { display: grid; gap: 6px; }
+  label.field > span:first-child { font-weight: 600; }
+  input[type="text"], input[type="number"], input[type="search"], textarea, select {
+    font: inherit; color: var(--text); background: var(--field); border: 1px solid rgba(255,255,255,.55); border-radius: 0; padding: 10px 12px; min-height: 44px; width: 100%;
+  }
+  textarea { min-height: 110px; resize: vertical; direction: ltr; text-align: left; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-size: .85em; }
+  option { color: #111; }
+  .opt { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 6px 0; }
+  .opt input { width: 20px; height: 20px; accent-color: var(--text); }
+  .err { color: var(--warn); font-weight: 600; min-height: 1.4em; }
+  fieldset { border: 0; padding: 0; margin: 0; display: grid; gap: 10px; }
+  legend { font-weight: 700; padding: 0; margin-bottom: 6px; }
+
+  /* כרטיסים */
+  .cards { display: grid; gap: 22px; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+  .card {
+    position: relative; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 8px;
+    background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,0) 40%), var(--card);
+    box-shadow: var(--shadow-soft), inset 0 1px 0 rgba(255,255,255,.18), inset 0 -2px 0 var(--card-edge);
+    transition: transform .6s var(--ease), box-shadow .6s var(--ease); min-width: 0;
+  }
+  .card:hover { transform: translateY(-8px); box-shadow: var(--shadow-deep), inset 0 1px 0 rgba(255,255,255,.22); }
+  .card h3 { margin: 0; font-size: 1.15em; line-height: 1.35; }
+  .card .latin { direction: ltr; text-align: right; color: var(--muted); font-size: .88em; margin: 0; }
+  .tag { display: inline-block; border: 1px solid var(--line); padding: 2px 10px; font-size: .85em; font-weight: 700; }
+  .card .foot { margin-top: auto; display: flex; justify-content: space-between; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+  .score { font-size: 2em; font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace; font-variant-numeric: tabular-nums; direction: ltr; line-height: 1; }
+  .scoreLabel { color: var(--match); font-weight: 700; font-size: .9em; }
+  .bar { display: grid; grid-template-columns: 9em 1fr 3em; align-items: center; gap: 10px; font-size: .92em; }
+  .bar .track { height: 10px; background: rgba(255,255,255,.18); position: relative; }
+  .bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--line); transition: width .8s var(--ease); }
+  .pill-verify { color: var(--warn); font-size: .88em; }
+  .empty { text-align: center; padding: 34px 18px; border: 1px dashed rgba(255,255,255,.5); }
+
+  /* טבלה */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  th, td { text-align: right; padding: 10px 8px; border-bottom: 1px solid rgba(255,255,255,.22); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .9em; }
+
+  /* הודעה קופצת שאינה דיאלוג */
+  #toast { position: fixed; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); right: max(16px, env(safe-area-inset-right,0px)); background: var(--card); box-shadow: var(--shadow-deep); padding: 12px 16px; max-width: min(92vw, 420px); z-index: 30; }
+  #toast[hidden] { display: none; }
+
+  dialog { background: linear-gradient(160deg, rgba(255,255,255,.14), rgba(255,255,255,0) 40%), var(--card); color: var(--text); border: 0; border-radius: 22px; max-width: min(92vw, 520px); padding: 24px; box-shadow: var(--shadow-deep); }
+  dialog::backdrop { background: rgba(20,36,38,.55); }
+  dialog h2 { margin-top: 0; }
+
+  .enter { animation: rise .6s var(--ease) both; }
+  @keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .card:hover, .btn:hover { transform: none; }
+  }
+  :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before { animation: none !important; transition: none !important; }
+  :root[data-motion="reduce"] .card:hover, :root[data-motion="reduce"] .btn:hover { transform: none; }
+  @media (max-width: 640px) { .wrap { padding-top: 14px; } h1 { font-size: 1.35em; } }
+</style>
+
+<a class="skip" href="#main">דלג לתוכן</a>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="#home">מנוע התאמה לטכנולוגיה מסייעת</a>
+    <nav class="menu" aria-label="ניווט ראשי">
+      <a href="#home" data-nav="home">תיקים</a>
+      <a href="#catalog" data-nav="catalog">קטלוג</a>
+      <a href="#rights" data-nav="rights">מרכז זכויות</a>
+      <a href="#data" data-nav="data">ייצוא וייבוא</a>
+      <a href="#settings" data-nav="settings">הגדרות</a>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1"></main>
+  <p class="muted" style="margin-top:36px">הכלי לשימוש אישי של רכזי נגישות. לא מאבחן, ולא מחליף חוות דעת מקצועית. הנתונים נשמרים בדפדפן בלבד.</p>
+</div>
+
+<div id="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="dlg" aria-labelledby="dlg-title"><h2 id="dlg-title"></h2><div id="dlg-body"></div><div class="row" style="margin-top:14px"><button class="btn" id="dlg-close" type="button">סגירה</button></div></dialog>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ========== נתונים ========== */
+  // קטלוג לדוגמה. מחירים ומקורות לא אומתו: כל הפריטים מסומנים verified:false.
+  // לפני פרסום אמיתי: לאמת כל פריט מול מקור ולמלא priceMin/priceMax ו-source.
+  const CATALOG = [
+    { id: "nvda", name: "קורא מסך חינמי", latin: "NVDA (NonVisual Desktop Access)", tier: "High", domain: "vision", coverage: "full", envs: ["home", "lab"], severity: ["mid", "high"], forWhom: "סטודנט עם עיוורון או ראייה ירודה שעובד על מחשב Windows.", limits: "דורש לימוד. לא מתאים למי שלא משתמש במחשב.", note: "מדובר בתוכנה חינמית ופתוחה. יש לבדוק את תנאי השימוש והתאימות למערכת המחשב בפועל." },
+    { id: "magnifier", name: "הגדלת מסך של Windows", latin: "Windows Magnifier", tier: "High", domain: "vision", coverage: "full", envs: ["lecture", "home", "lab"], severity: ["low", "mid"], forWhom: "סטודנט עם ראייה ירודה שצריך הגדלה זמנית על מסך.", limits: "מוגבל למחשב Windows. לא מתאים לחומר מודפס.", note: "כלי מובנה במערכת ההפעלה. יש לוודא את הגרסה במחשב של הסטודנט." },
+    { id: "bme", name: "זיהוי עצמים בזמן אמת", latin: "Be My Eyes", tier: "High", domain: "vision", coverage: "partial", envs: ["lecture", "home"], severity: ["mid"], forWhom: "סטודנט שצריך עזרה מיידית בזיהוי חפצים, שלטים או מסמכים.", limits: "תלוי בחיבור לאינטרנט ובמכשיר נייד. מערב אדם מתנדב.", note: "יש לבדוק את אופן הפעולה והפרטיות לפני המלצה." },
+    { id: "braille-labels", name: "מדבקות ברייל לחפצים", latin: "Braille labels", tier: "Low", domain: "vision", coverage: "full", envs: ["home", "lab"], severity: ["mid", "high"], forWhom: "סטודנט שמזהה חפצים ומכשירים בעזרת מגע.", limits: "דורש ידע בסיסי בברייל. לא מתאים לחומר לימוד ארוך.", note: "" },
+    { id: "reading-ruler", name: "סרגל קריאה צבעוני", latin: "Colored reading ruler", tier: "Low", domain: "vision", coverage: "partial", envs: ["lecture", "exam", "home"], severity: ["low"], forWhom: "סטודנט שמאבד את השורה בזמן קריאה, לרבות עם לקות למידה.", limits: "תועלת מוגבלת לראייה ירודה חמורה.", note: "" },
+    { id: "large-print", name: "הדפסה מוגדלת וניגודיות גבוהה", latin: "Large-print handouts", tier: "Low", domain: "vision", coverage: "full", envs: ["lecture", "exam", "home"], severity: ["low", "mid"], forWhom: "סטודנט שצריך חומר מודפס בגודל אות גדול.", limits: "דורש תיאום עם המרצה או מחלקת ההנגשה.", note: "" },
+    { id: "pomodoro", name: "טכניקת פומודורו עם טיימר", latin: "Pomodoro Technique", tier: "High", domain: "attention", coverage: "full", envs: ["home", "lab"], severity: ["low", "mid"], forWhom: "סטודנט שמתקשה להתמיד בלמידה ארוכה ומתפזר.", limits: "דורש משמעת עצמית. לא מתאים למבחן.", note: "שיטה עם אפליקציות רבות. יש לבחור אפליקציה אחת ולאמת אותה." },
+    { id: "hourglass", name: "שעון חול פיזי", latin: "Hourglass timer", tier: "Low", domain: "attention", coverage: "full", envs: ["exam", "home"], severity: ["low", "mid", "high"], forWhom: "סטודנט שמתקשה להעריך זמן, במיוחד במבחן.", limits: "אינו מתאים לשימוש במבחן שבו אסור להביא חפצים. יש לבדוק זאת.", note: "" },
+    { id: "stayfocusd", name: "חוסם אתרים ומסיחים", latin: "StayFocusd (תוסף Chrome)", tier: "High", domain: "attention", coverage: "partial", envs: ["home"], severity: ["mid", "high"], forWhom: "סטודנט שנסחף לרשתות חברתיות בזמן למידה.", limits: "רק בדפדפן Chrome. לא חוסם יישומים אחרים.", note: "" },
+    { id: "fidget", name: "קוביית פידג'ט", latin: "Fidget cube", tier: "Low", domain: "attention", coverage: "partial", envs: ["lecture", "home"], severity: ["low", "mid"], forWhom: "סטודנט שצריך להפנות מתח ידיים כדי להישאר ממוקד.", limits: "עלול להסיח את הסביבה. לא מתאים לכל הקשר.", note: "" },
+    { id: "weekly-planner", name: "לוח תכנון שבועי מודפס", latin: "Printed weekly planner", tier: "Low", domain: "attention", coverage: "full", envs: ["home"], severity: ["mid", "high"], forWhom: "סטודנט שצריך מבנה שבועי נראה לעין.", limits: "דורש עדכון ידני.", note: "" },
+    { id: "notion", name: "תוכנת ניהול משימות", latin: "Notion", tier: "High", domain: "attention", coverage: "partial", envs: ["home", "lab"], severity: ["mid"], forWhom: "סטודנט שצריך לנהל משימות ותאריכי הגשה במקום אחד.", limits: "עקומת למידה. אינה מטפלת בהסחות ישירות.", note: "" }
+  ];
+
+  const DOMAIN = { vision: "ראייה", attention: "קשב וריכוז" };
+  const ENV = { lecture: "הרצאה", exam: "מבחן", home: "לימוד ביתי", lab: "מעבדה או ספרייה" };
+  const SEV = { low: "נמוכה", mid: "בינונית", high: "גבוהה" };
+  const PREF = { High: "High-Tech", Low: "Low-Tech", both: "שניהם" };
+  const CRIT = [
+    ["domain", "התאמה לתחום", 40],
+    ["env", "התאמה לסביבה", 20],
+    ["budget", "התאמה לתקציב", 20],
+    ["level", "העדפת רמה", 10],
+    ["severity", "חומרת האתגר", 10]
+  ];
+  const KEY = "matchApp.v1";
+
+  /* ========== אחסון מקומי, עם טיפול בכשל ========== */
+  const blank = () => ({ cases: [], settings: { size: "normal", contrast: "normal", motion: "system", theme: "system" } });
+  let db = blank();
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) { const parsed = JSON.parse(raw); if (parsed && Array.isArray(parsed.cases)) db = Object.assign(blank(), parsed); }
+  } catch (e) { db = blank(); }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(db)); return true; }
+    catch (e) { toast("השמירה המקומית לא זמינה בדפדפן הזה. אפשר לייצא את הנתונים מהמסך ייצוא וייבוא."); return false; }
+  }
+
+  /* ========== עזרים ========== */
+  const $ = (s, root = document) => root.querySelector(s);
+  const esc = (v) => String(v ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const main = $("#main");
+  let toastTimer = null;
+  function toast(msg) {
+    const t = $("#toast"); t.textContent = msg; t.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4200);
+  }
+  function caseById(id) { return db.cases.find(c => c.id === id); }
+  function techById(id) { return CATALOG.find(t => t.id === id); }
+  function nextInternalId() {
+    const max = db.cases.reduce((m, c) => Math.max(m, parseInt(String(c.internalId).replace(/\D/g, ""), 10) || 0), 0);
+    return "S-" + String(max + 1).padStart(4, "0");
+  }
+  function uid() { return "c" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  /* ========== מנוע ההתאמה: חמישה פרמטרים, סה"כ 100 ========== */
+  function scoreTech(tech, c) {
+    const parts = {};
+    // תחום: 40 מלא, 20 חלקי, 0 אם לא באותו תחום
+    parts.domain = tech.domain === c.domain ? (tech.coverage === "full" ? 40 : 20) : 0;
+    // סביבה: 20 לפי יחס הסביבות שהוזנו שהטכנולוגיה מכסה
+    parts.env = c.envs.length ? Math.round(20 * c.envs.filter(e => tech.envs.includes(e)).length / c.envs.length) : 10;
+    // תקציב: אם לא הוזן תקציב, לא מגביל (20). אם המחיר לא אומת, ניטרלי (10)
+    if (c.budget == null) parts.budget = 20;
+    else if (tech.priceMin == null) parts.budget = 10;
+    else if (tech.priceMin <= c.budget) parts.budget = 20;
+    else parts.budget = Math.max(0, Math.round(20 - 20 * (tech.priceMin - c.budget) / c.budget));
+    // רמה: 10 אם ההעדפה תואמת או "שניהם"
+    parts.level = (c.pref === "both" || c.pref === tech.tier) ? 10 : 0;
+    // חומרה: 10 אם הטכנולוגיה מיועדת לחומרה שנבחרה, אחרת 4
+    parts.severity = tech.severity.includes(c.severity) ? 10 : 4;
+    const total = parts.domain + parts.env + parts.budget + parts.level + parts.severity;
+    return { total, parts };
+  }
+  function rankFor(c) {
+    return CATALOG.filter(t => t.domain === c.domain)
+      .map(t => ({ tech: t, ...scoreTech(t, c) }))
+      .sort((a, b) => b.total - a.total);
+  }
+  function band(total) { return total >= 75 ? "התאמה גבוהה" : total >= 50 ? "התאמה בינונית" : "התאמה נמוכה"; }
+
+  /* ========== תבנית תצוגה ========== */
+  function setNav(name) {
+    document.querySelectorAll("[data-nav]").forEach(a => {
+      if (a.dataset.nav === name) a.setAttribute("aria-current", "page");
+      else a.removeAttribute("aria-current");
+    });
+  }
+  function verifyLine(t) {
+    return t.source
+      ? `מקור: ${esc(t.source)}`
+      : `<span class="pill-verify">מקור ותאריך אימות: טרם אומתו</span>`;
+  }
+
+  /* ========== מסכים ========== */
+  function viewHome() {
+    setNav("home");
+    const list = db.cases.slice().sort((a, b) => b.created.localeCompare(a.created));
+    main.innerHTML = `
+      <section class="enter">
+        <h1>תיקים פתוחים</h1>
+        <p class="lede">כל תיק מתעד צורך אחד של סטודנט, ומציג המלצות מדורגות לפיו. המזהה הוא פנימי בלבד, בלי שם מלא.</p>
+        <div class="row" style="margin:18px 0 24px"><a class="btn primary" href="#new">תיק חדש</a></div>
+        ${list.length === 0
+          ? `<div class="empty panel"><h2 style="margin-top:0">אין תיקים עדיין</h2><p>התחילו בתיק חדש. השאלון לוקח כשתי דקות, וההמלצות מופיעות מיד אחריו.</p></div>`
+          : `<div class="table-wrap"><table aria-label="רשימת תיקים"><thead><tr><th>מזהה</th><th>תחום</th><th>חומרה</th><th>נוצר</th><th>הוספות לתיק</th><th></th></tr></thead><tbody>
+              ${list.map(c => `<tr>
+                <td class="num">${esc(c.internalId)}</td>
+                <td>${esc(DOMAIN[c.domain])}</td>
+                <td>${esc(SEV[c.severity])}</td>
+                <td class="num">${esc(c.created.slice(0, 10))}</td>
+                <td class="num">${c.added.length}</td>
+                <td><a class="btn small" href="#case-${esc(c.id)}">פתח</a></td>
+              </tr>`).join("")}
+            </tbody></table></div>`}
+      </section>`;
+  }
+
+  function viewNew(err) {
+    setNav("home");
+    main.innerHTML = `
+      <section class="enter">
+        <h1>תיק חדש</h1>
+        <p class="lede">שישה שאלות. אפשר לדלג על התקציב וההערות. הציונים שיוצגו מחושבים ממענה לשאלות אלה בלבד.</p>
+        <form id="intake" class="panel stack" novalidate>
+          <fieldset aria-describedby="e-domain">
+            <legend>1. תחום האתגר</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="domain" value="vision" required> ראייה</label>
+              <label class="opt"><input type="radio" name="domain" value="attention"> קשב וריכוז</label>
+            </div>
+            <div id="e-domain" class="err" role="alert"></div>
+          </fieldset>
+          <fieldset>
+            <legend>2. חומרת האתגר</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="severity" value="low" checked> נמוכה</label>
+              <label class="opt"><input type="radio" name="severity" value="mid"> בינונית</label>
+              <label class="opt"><input type="radio" name="severity" value="high"> גבוהה</label>
+            </div>
+          </fieldset>
+          <fieldset aria-describedby="e-env">
+            <legend>3. באילו סביבות הסטודנט צריך תמיכה? (בחרו לפחות אחת)</legend>
+            <div class="chips">
+              ${Object.entries(ENV).map(([k, v]) => `<label class="opt"><input type="checkbox" name="env" value="${k}"> ${v}</label>`).join("")}
+            </div>
+            <div id="e-env" class="err" role="alert"></div>
+          </fieldset>
+          <fieldset>
+            <legend>4. העדפת רמת טכנולוגיה</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="pref" value="High" checked> High-Tech</label>
+              <label class="opt"><input type="radio" name="pref" value="Low"> Low-Tech</label>
+              <label class="opt"><input type="radio" name="pref" value="both"> שניהם</label>
+            </div>
+          </fieldset>
+          <label class="field"><span>5. תקציב מקסימלי בש"ח (אופציונלי)</span>
+            <input type="number" name="budget" min="0" step="1" inputmode="numeric" aria-describedby="h-budget">
+            <span id="h-budget" class="muted">אם לא מוזן, התקציב לא מגביל את הדירוג. המחירים בקטלוג עדיין לא אומתו.</span>
+          </label>
+          <label class="field"><span>6. הערות לתיק (אופציונלי)</span>
+            <textarea name="notes" maxlength="600" style="direction:rtl;text-align:right;font-family:inherit;font-size:1em" placeholder="למשל: הסטודנט מבקש שהחומר יישלח מראש."></textarea>
+          </label>
+          <div class="row"><button class="btn primary" type="submit">צפייה בהמלצות</button><a class="btn" href="#home">ביטול</a></div>
+        </form>
+      </section>`;
+    const form = $("#intake");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const domain = fd.get("domain");
+      const envs = fd.getAll("env");
+      let bad = null;
+      $("#e-domain").textContent = ""; $("#e-env").textContent = "";
+      if (!domain) { $("#e-domain").textContent = "יש לבחור תחום אחד כדי להמשיך."; bad = form.querySelector('[name="domain"]'); }
+      if (envs.length === 0) { $("#e-env").textContent = "יש לבחור לפחות סביבה אחת."; bad = bad || form.querySelector('[name="env"]'); }
+      if (bad) { bad.focus(); return; }
+      const bRaw = fd.get("budget");
+      const budget = bRaw === "" || bRaw === null ? null : Math.max(0, Number(bRaw));
+      const c = {
+        id: uid(), internalId: nextInternalId(), created: new Date().toISOString(),
+        domain, severity: fd.get("severity"), envs, pref: fd.get("pref"),
+        budget: Number.isFinite(budget) ? budget : null,
+        notes: String(fd.get("notes") || "").trim().slice(0, 600),
+        added: []
+      };
+      db.cases.push(c);
+      if (save()) toast(`נפתח תיק ${c.internalId}`);
+      location.hash = "case-" + c.id;
+    });
+    const first = form.querySelector('[name="domain"]'); if (err) first && first.focus();
+  }
+
+  function viewCase(id) {
+    const c = caseById(id);
+    if (!c) return viewMissing();
+    setNav("home");
+    const ranked = rankFor(c);
+    const top = ranked.slice(0, 3);
+    const added = c.added.map(tid => techById(tid)).filter(Boolean);
+    main.innerHTML = `
+      <section class="enter">
+        <p class="muted"><a href="#home">תיקים</a> / <span class="num">${esc(c.internalId)}</span></p>
+        <h1>תיק ${esc(c.internalId)}: ${esc(DOMAIN[c.domain])}</h1>
+        <div class="grid2" style="margin-top:14px">
+          <div class="panel">
+            <h2 style="margin-top:0">הצרכים שהוזנו</h2>
+            <dl class="kv">
+              <dt>חומרה</dt><dd>${esc(SEV[c.severity])}</dd>
+              <dt>סביבות</dt><dd>${c.envs.map(e => esc(ENV[e])).join(", ")}</dd>
+              <dt>העדפה</dt><dd>${esc(PREF[c.pref])}</dd>
+              <dt>תקציב</dt><dd>${c.budget == null ? "לא הוזן" : `<span class="num">${c.budget.toLocaleString("he-IL")} ש"ח</span>`}</dd>
+              <dt>הערות</dt><dd>${c.notes ? esc(c.notes) : "אין"}</dd>
+            </dl>
+            <div class="row" style="margin-top:14px"><a class="btn" href="#results-${esc(c.id)}">כל ההמלצות המדורגות</a></div>
+          </div>
+          <div class="panel">
+            <h2 style="margin-top:0">בתיק (${added.length})</h2>
+            ${added.length === 0
+              ? `<p class="muted">עדיין לא נוספו פריטים. ההמלצות המובילות מוצגות למטה.</p>`
+              : `<ul style="padding-inline-start:18px;margin:0 0 12px">${added.map(t => `<li><a href="#tech-${esc(c.id)}-${esc(t.id)}">${esc(t.name)}</a></li>`).join("")}</ul>`}
+            <div class="row"><button class="btn" id="copy-summary" type="button">העתקת סיכום לתיק</button></div>
+            <p class="muted" style="margin-top:10px">הסיכום נוצר כטקסט, להעתקה ליישום אחר של המוסד.</p>
+          </div>
+        </div>
+        <h2>המלצות מובילות</h2>
+        <div class="cards">${top.map(r => cardHtml(c, r)).join("")}</div>
+      </section>`;
+    $("#copy-summary").addEventListener("click", () => copyText(summaryText(c)));
+    bindCardActions(c.id);
+  }
+
+  function summaryText(c) {
+    const lines = [
+      `תיק ${c.internalId}, ${DOMAIN[c.domain]}`,
+      `חומרה: ${SEV[c.severity]}. סביבות: ${c.envs.map(e => ENV[e]).join(", ")}. העדפה: ${PREF[c.pref]}.`,
+      c.budget == null ? "תקציב: לא הוזן." : `תקציב: עד ${c.budget} ש"ח.`,
+      "",
+      "פריטים בתיק:"
+    ];
+    const added = c.added.map(techById).filter(Boolean);
+    if (added.length === 0) lines.push("לא נוספו פריטים.");
+    added.forEach(t => {
+      const r = scoreTech(t, c);
+      lines.push(`- ${t.name} (${t.latin}), ${PREF[t.tier]}, ציון ${r.total}. ${t.limits}`);
+    });
+    lines.push("", "הציונים מחושבים לפי כללי המנוע בלבד. ההחלטה הסופית נשארת לאיש המקצוע.");
+    return lines.join("\n");
+  }
+
+  function cardHtml(c, r) {
+    const t = r.tech;
+    const inFile = c.added.includes(t.id);
+    return `
+      <article class="card" aria-labelledby="t-${t.id}">
+        <div class="row" style="justify-content:space-between">
+          <span class="tag">${esc(PREF[t.tier])}</span>
+          <span class="muted">${esc(DOMAIN[t.domain])}</span>
+        </div>
+        <h3 id="t-${t.id}">${esc(t.name)}</h3>
+        <p class="latin">${esc(t.latin)}</p>
+        <p>${esc(t.forWhom)}</p>
+        <div class="foot">
+          <div><div class="score" aria-label="ציון ${r.total} מתוך 100">${r.total}</div><div class="scoreLabel">${band(r.total)}</div></div>
+          <div class="row">
+            <button class="btn small" type="button" data-add="${esc(c.id)}|${esc(t.id)}" aria-pressed="${inFile}">${inFile ? "בתיק" : "הוסף לתיק"}</button>
+            <a class="btn small" href="#tech-${esc(c.id)}-${esc(t.id)}">פרטים</a>
+          </div>
+        </div>
+      </article>`;
+  }
+
+  function bindCardActions(cid) {
+    main.querySelectorAll("[data-add]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const [caseId, techId] = btn.dataset.add.split("|");
+        const c = caseById(caseId); if (!c) return;
+        const on = !c.added.includes(techId);
+        c.added = on ? [...c.added, techId] : c.added.filter(x => x !== techId);
+        save();
+        btn.setAttribute("aria-pressed", String(on));
+        btn.textContent = on ? "בתיק" : "הוסף לתיק";
+        toast(on ? `נוסף לתיק ${c.internalId}` : `הוסר מהתיק ${c.internalId}`);
+        if (location.hash === "#case-" + c.id) viewCase(c.id);
+      });
+    });
+  }
+
+  function viewResults(id) {
+    const c = caseById(id);
+    if (!c) return viewMissing();
+    setNav("home");
+    const ranked = rankFor(c);
+    main.innerHTML = `
+      <section class="enter">
+        <p class="muted"><a href="#case-${esc(c.id)}">חזרה לתיק</a></p>
+        <h1>המלצות מדורגות לתיק <span class="num">${esc(c.internalId)}</span></h1>
+        <p class="lede">כל כרטיס מראה את חמשת הפרמטרים שחושבו. הפירוט מאפשר לבדוק מה הוביל לציון, ולא רק את הציון.</p>
+        ${ranked.length === 0 ? `<div class="empty panel">אין פריטים בקטלוג לתחום זה.</div>` : ""}
+        <div class="cards">${ranked.map(r => `
+          <div style="display:contents">
+            ${cardHtml(c, r)}
+          </div>`).join("")}</div>
+        <h2>פירוט הציון</h2>
+        <div class="panel stack">
+          <p>הציון מורכב מחמישה פרמטרים: תחום (40), סביבה (20), תקציב (20), העדפת רמה (10), וחומרה (10). לכל פריט בדירוג מוצג הפירוט כאן.</p>
+          <div class="table-wrap"><table aria-label="פירוט הציונים לפי פריט">
+            <thead><tr><th>פריט</th>${CRIT.map(([, label, max]) => `<th>${label} (${max})</th>`).join("")}<th>סה"כ</th></tr></thead>
+            <tbody>${ranked.map(r => `<tr><td>${esc(r.tech.name)}</td>${CRIT.map(([k]) => `<td class="num">${r.parts[k]}</td>`).join("")}<td class="num"><strong>${r.total}</strong></td></tr>`).join("")}</tbody>
+          </table></div>
+          <p class="muted">מחיר לא אומת: התקציב מדורג כניטרלי (10). אם לא הוזן תקציב, הפרמטר מלא (20).</p>
+        </div>
+      </section>`;
+    bindCardActions(c.id);
+  }
+
+  function viewTech(cid, tid) {
+    const c = caseById(cid), t = techById(tid);
+    if (!c || !t) return viewMissing();
+    setNav("home");
+    const r = scoreTech(t, c);
+    const inFile = c.added.includes(t.id);
+    main.innerHTML = `
+      <section class="enter">
+        <p class="muted"><a href="#case-${esc(c.id)}">חזרה לתיק ${esc(c.internalId)}</a></p>
+        <h1>${esc(t.name)}</h1>
+        <p class="latin num" style="direction:ltr;text-align:left">${esc(t.latin)}</p>
+        <div class="grid2" style="margin-top:14px">
+          <div class="panel stack">
+            <div class="row"><span class="tag">${esc(PREF[t.tier])}</span><span class="tag">${esc(DOMAIN[t.domain])}</span></div>
+            <dl class="kv">
+              <dt>למי מתאים</dt><dd>${esc(t.forWhom)}</dd>
+              <dt>מגבלות</dt><dd>${esc(t.limits)}</dd>
+              <dt>סביבות</dt><dd>${t.envs.map(e => esc(ENV[e])).join(", ")}</dd>
+              <dt>הערה</dt><dd>${t.note ? esc(t.note) : "אין"}</dd>
+              <dt>מקור</dt><dd>${verifyLine(t)}</dd>
+            </dl>
+            <div class="row"><button class="btn primary" type="button" id="tech-add" aria-pressed="${inFile}">${inFile ? "הסר מהתיק" : "הוסף לתיק"}</button></div>
+          </div>
+          <div class="panel stack">
+            <h2 style="margin:0">ציון לתיק זה</h2>
+            <div class="score">${r.total}</div>
+            <div class="scoreLabel">${band(r.total)}</div>
+            ${CRIT.map(([k, label, max]) => `
+              <div class="bar"><span>${label}</span><div class="track" role="img" aria-label="${label}: ${r.parts[k]} מתוך ${max}"><div class="fill" style="width:${(r.parts[k] / max) * 100}%"></div></div><span class="num">${r.parts[k]}/${max}</span></div>`).join("")}
+          </div>
+        </div>
+      </section>`;
+    $("#tech-add").addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      const on = !c.added.includes(t.id);
+      c.added = on ? [...c.added, t.id] : c.added.filter(x => x !== t.id);
+      save();
+      btn.setAttribute("aria-pressed", String(on));
+      btn.textContent = on ? "הסר מהתיק" : "הוסף לתיק";
+      toast(on ? `נוסף לתיק ${c.internalId}` : `הוסר מהתיק ${c.internalId}`);
+    });
+  }
+
+  function viewCatalog() {
+    setNav("catalog");
+    main.innerHTML = `
+      <section class="enter">
+        <h1>קטלוג טכנולוגיות</h1>
+        <p class="lede">עיון בכל הפריטים, ללא תיק. הציון מחושב רק בתיק, לפי הצרכים שנאספו בו.</p>
+        <div class="panel stack" style="margin:16px 0">
+          <label class="field"><span>חיפוש</span><input type="search" id="q" placeholder="שם או מילה חופשית"></label>
+          <div class="chips" role="group" aria-label="סינון לפי תחום">
+            <button class="chip" type="button" aria-pressed="true" data-d="all">הכול</button>
+            <button class="chip" type="button" aria-pressed="false" data-d="vision">ראייה</button>
+            <button class="chip" type="button" aria-pressed="false" data-d="attention">קשב וריכוז</button>
+          </div>
+          <div class="chips" role="group" aria-label="סינון לפי רמה">
+            <button class="chip" type="button" aria-pressed="true" data-t="all">כל הרמות</button>
+            <button class="chip" type="button" aria-pressed="false" data-t="High">High-Tech</button>
+            <button class="chip" type="button" aria-pressed="false" data-t="Low">Low-Tech</button>
+          </div>
+        </div>
+        <p id="count" class="muted" aria-live="polite"></p>
+        <div class="cards" id="list"></div>
+      </section>`;
+    let dom = "all", tier = "all", q = "";
+    const draw = () => {
+      const list = CATALOG.filter(t => (dom === "all" || t.domain === dom) && (tier === "all" || t.tier === tier) &&
+        (!q || (t.name + " " + t.latin + " " + t.forWhom).toLowerCase().includes(q.toLowerCase())));
+      $("#count").textContent = `${list.length} פריטים מתוך ${CATALOG.length}`;
+      $("#list").innerHTML = list.length
+        ? list.map(t => `<article class="card"><div class="row" style="justify-content:space-between"><span class="tag">${esc(PREF[t.tier])}</span><span class="muted">${esc(DOMAIN[t.domain])}</span></div><h3>${esc(t.name)}</h3><p class="latin">${esc(t.latin)}</p><p>${esc(t.forWhom)}</p><p class="muted">מגבלה: ${esc(t.limits)}</p><div class="foot">${verifyLine(t)}</div></article>`).join("")
+        : `<div class="empty panel" style="grid-column:1/-1">לא נמצאו פריטים. נסו מילה אחרת או הסירו סינון.</div>`;
+    };
+    main.querySelectorAll("[data-d]").forEach(b => b.addEventListener("click", () => { dom = b.dataset.d; main.querySelectorAll("[data-d]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); draw(); }));
+    main.querySelectorAll("[data-t]").forEach(b => b.addEventListener("click", () => { tier = b.dataset.t; main.querySelectorAll("[data-t]").forEach(x => x.setAttribute("aria-pressed", String(x === b))); draw(); }));
+    $("#q").addEventListener("input", (e) => { q = e.target.value.trim(); draw(); });
+    draw();
+  }
+
+  function viewRights() {
+    setNav("rights");
+    main.innerHTML = `
+      <section class="enter">
+        <h1>מרכז זכויות: מימון טכנולוגיה מסייעת</h1>
+        <p class="lede">מדריך לבדיקה, לא מסקנה. כל מסלול מימון משתנה לפי תקנות וזכאות. לכל טענה נדרש מקור עדכני ותאריך עדכון לפני שמציגים אותה לסטודנט.</p>
+        <div class="panel stack" style="margin-top:16px">
+          <p class="warn">מצב המדריך: טרם אומת. התוכן הזה לא נבדק מול מקור רשמי.</p>
+        </div>
+        <div class="grid2" style="margin-top:18px">
+          ${[
+            ["מוסד אקדמי", "מרכז התמיכה או יחידת הנגישות במוסד. לבדוק אם קיימת תקנה פנימית לרכישת ציוד, והאם הטכנולוגיה נכללת בהתאמות המוסד."],
+            ["ביטוח לאומי", "לבדוק אם קיים מסלול השתתפות בציוד או בהתאמות טכנולוגיות, מה תנאי הזכאות, ואיזה מסמכים נדרשים ממי."],
+            ["משרד הרווחה", "לבדוק אם קיים מסלול תמיכה עבור אנשים עם מוגבלות, ומה הקשר בינו לבין מסלולים אחרים."]
+          ].map(([t, d]) => `<article class="card"><h3>${esc(t)}</h3><p>${esc(d)}</p><p class="pill-verify">מקור ותאריך עדכון: טרם אומתו</p></article>`).join("")}
+        </div>
+        <h2>שאלות לשיחה עם הסטודנט</h2>
+        <ul class="panel" style="padding-inline-start:36px">
+          <li>האם הסטודנט כבר קיבל התאמה או ציוד דרך המוסד?</li>
+          <li>האם יש מסמך אבחון עדכני, ומאיזו גורם הוא הונפק?</li>
+          <li>באיזו מסגרת הטכנולוגיה תשמש: לימוד, מבחנים או שניהם?</li>
+        </ul>
+      </section>`;
+  }
+
+  function viewData(msg) {
+    setNav("data");
+    const json = JSON.stringify(db, null, 2);
+    main.innerHTML = `
+      <section class="enter">
+        <h1>ייצוא וייבוא</h1>
+        <p class="lede">הנתונים נשמרים בדפדפן הזה בלבד. לגיבוי או להעברה למחשב אחר: מעתיקים את הטקסט ושומרים אותו אצלכם. בייבוא מדביקים טקסט שיוצא מכאן.</p>
+        ${msg ? `<p class="warn" role="status">${esc(msg)}</p>` : ""}
+        <div class="panel stack" style="margin-top:16px">
+          <label class="field"><span>ייצוא: כל התיקים (JSON)</span><textarea id="out" readonly>${esc(json)}</textarea></label>
+          <div class="row"><button class="btn" id="copy-out" type="button">העתקת הנתונים</button></div>
+        </div>
+        <div class="panel stack" style="margin-top:18px">
+          <label class="field"><span>ייבוא: הדביקו כאן את הטקסט</span><textarea id="in" placeholder="{ &quot;cases&quot;: [] }"></textarea></label>
+          <p class="muted">ייבוא מחליף את כל התיקים הקיימים בדפדפן הזה. לפני ייבוא מומלץ לייצא קודם.</p>
+          <div class="row"><button class="btn" id="do-import" type="button">ייבוא והחלפה</button></div>
+        </div>
+      </section>`;
+    $("#copy-out").addEventListener("click", () => copyText(json));
+    $("#do-import").addEventListener("click", () => {
+      const raw = $("#in").value.trim();
+      let parsed;
+      try { parsed = JSON.parse(raw); } catch (e) { return viewData("הטקסט אינו JSON תקין. לא בוצע ייבוא."); }
+      if (!parsed || !Array.isArray(parsed.cases)) return viewData("המבנה אינו תואם. נדרש שדה cases שהוא רשימה.");
+      const clean = parsed.cases.filter(c => c && typeof c.id === "string" && CATALOG.length && (c.domain === "vision" || c.domain === "attention"));
+      db = Object.assign(blank(), { ...parsed, cases: clean.map(c => ({ ...c, added: Array.isArray(c.added) ? c.added.filter(x => techById(x)) : [] })) });
+      if (save()) { toast(`יובאו ${clean.length} תיקים`); location.hash = "home"; }
+    });
+  }
+
+  function viewSettings() {
+    setNav("settings");
+    const s = db.settings;
+    main.innerHTML = `
+      <section class="enter">
+        <h1>הגדרות תצוגה</h1>
+        <p class="lede">ההגדרות נשמרות בדפדפן הזה, ולא משפיעות על נתוני התיקים.</p>
+        <form class="panel stack" id="set" style="margin-top:16px">
+          <fieldset><legend>גודל טקסט</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="size" value="normal" ${s.size !== "large" ? "checked" : ""}> רגיל</label>
+              <label class="opt"><input type="radio" name="size" value="large" ${s.size === "large" ? "checked" : ""}> גדול</label>
+            </div>
+          </fieldset>
+          <fieldset><legend>ניגודיות</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="contrast" value="normal" ${s.contrast !== "high" ? "checked" : ""}> רגילה</label>
+              <label class="opt"><input type="radio" name="contrast" value="high" ${s.contrast === "high" ? "checked" : ""}> גבוהה</label>
+            </div>
+          </fieldset>
+          <fieldset><legend>תנועה</legend>
+            <div class="chips" role="radiogroup">
+              <label class="opt"><input type="radio" name="motion" value="system" ${s.motion !== "reduce" ? "checked" : ""}> לפי המערכת</label>
+              <label class="opt"><input type="radio" name="motion" value="reduce" ${s.motion === "reduce" ? "checked" : ""}> תנועה מופחתת</label>
+            </div>
+          </fieldset>
+          <div class="row"><button class="btn primary" type="submit">שמירה</button></div>
+        </form>
+      </section>`;
+    $("#set").addEventListener("submit", (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      db.settings = { size: fd.get("size"), contrast: fd.get("contrast"), motion: fd.get("motion"), theme: db.settings.theme || "system" };
+      applySettings();
+      if (save()) toast("ההגדרות נשמרו");
+    });
+  }
+
+  function viewMissing() {
+    setNav("home");
+    main.innerHTML = `<section class="enter"><h1>הדף לא נמצא</h1><p>ייתכן שהתיק נמחק או שהקישור ישן. אפשר לחזור לרשימת התיקים.</p><div class="row"><a class="btn primary" href="#home">לרשימת התיקים</a></div></section>`;
+  }
+
+  function applySettings() {
+    const root = document.documentElement;
+    root.dataset.size = db.settings.size === "large" ? "large" : "normal";
+    root.dataset.contrast = db.settings.contrast === "high" ? "high" : "normal";
+    root.dataset.motion = db.settings.motion === "reduce" ? "reduce" : "system";
+  }
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); toast("הועתק"); }
+    catch (e) { toast("ההעתקה לא זמינה כאן. בחרו את הטקסט והעתיקו ידנית."); }
+  }
+
+  /* ========== ניתוב, לפי hash פשוט ========== */
+  function route() {
+    const h = (location.hash || "#home").slice(1);
+    let m;
+    applySettings();
+    main.focus({ preventScroll: true });
+    if ((m = h.match(/^case-(c[a-z0-9]+)$/))) return viewCase(m[1]);
+    if ((m = h.match(/^results-(c[a-z0-9]+)$/))) return viewResults(m[1]);
+    if ((m = h.match(/^tech-(c[a-z0-9]+)-([a-z0-9-]+)$/))) return viewTech(m[1], m[2]);
+    switch (h) {
+      case "new": return viewNew();
+      case "catalog": return viewCatalog();
+      case "rights": return viewRights();
+      case "data": return viewData();
+      case "settings": return viewSettings();
+      case "home": case "": return viewHome();
+      default: return viewMissing();
+    }
+  }
+  window.addEventListener("hashchange", route);
+  route();
+})();
+</script>
