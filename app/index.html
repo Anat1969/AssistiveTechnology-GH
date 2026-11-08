@@ -274,27 +274,16 @@
   .haiku-arc .base { stroke: #fff; stroke-width: .2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 3.2s var(--ease) .6s forwards; }
   .haiku-arc .glow { stroke: var(--warm); stroke-width: .34; stroke-dasharray: .07 .93; stroke-dashoffset: 1; opacity: 0; animation: travel 7s linear 4s infinite; }
   .haiku-dot { position: absolute; left: 35%; bottom: 37%; width: 16px; height: 16px; margin: 0 0 -8px -8px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 0 rgba(201,154,134,.55); opacity: 0; animation: dotIn .8s var(--ease) 2.2s forwards, breathe 4.5s ease-in-out 3s infinite; }
-  .haiku-note { position: relative; margin: 14px 0 0; max-width: 36ch; color: var(--muted); font-size: .95em; animation: rise .9s var(--ease) 3.4s both; }
   @keyframes frameIn { to { clip-path: inset(0 0 0 0); } }
   @keyframes wordIn { to { opacity: 1; filter: none; transform: none; } }
   @keyframes dotIn { from { opacity: 0; transform: scale(.2); } to { opacity: 1; transform: scale(1); } }
   @keyframes breathe { 0%,100% { box-shadow: 0 0 0 0 rgba(201,154,134,.55); transform: scale(1); } 50% { box-shadow: 0 0 0 22px rgba(201,154,134,0); transform: scale(1.12); } }
   @keyframes travel { 0% { stroke-dashoffset: 1; opacity: 0; } 8% { opacity: 1; } 55% { opacity: 1; } 62%,100% { stroke-dashoffset: 0; opacity: 0; } }
-  .start-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 22px 0 0; }
-  .start-actions .lead { margin: 0; color: var(--muted); max-width: 60ch; }
   @media (max-width: 640px) { .haiku-stage { min-height: 68vh; } .haiku-arc { left: 5%; bottom: 6%; width: 90%; height: 40%; } .haiku-dot { left: 50%; bottom: 26%; } }
-  .start-actions .btn { padding: 8px 16px; font-size: .86em; }
-  .start-actions .lead { font-size: .84em; }
-  .start-fine { font-size: .84em; margin-top: 10px; }
-  .start-fine h2 { font-size: 1.12em; margin: 26px 0 10px; }
-  .start-fine h3 { font-size: 1.02em; }
-  .start-fine .panel { padding: 16px 18px; }
-  .start-fine .panel p[style] { font-size: 1em !important; }
-  .start-fine .step { grid-template-columns: 40px 1fr; padding: 14px; gap: 12px; }
-  .start-fine .step .n { width: 32px; height: 32px; font-size: 1em; }
-  .start-fine .steps { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
-  .start-fine .stack { gap: 6px; }
-  :root[data-motion="reduce"] .haiku .w, :root[data-motion="reduce"] .haiku-dot, :root[data-motion="reduce"] .haiku-note { opacity: 1; filter: none; transform: none; }
+  .poem .haiku-stage { min-height: min(78vh, 680px); }
+  .poem-next { margin: 14px 0 0; font-size: .86em; text-align: left; animation: rise .9s var(--ease) 3.6s both; }
+  .poem-next a { color: var(--muted); text-decoration: none; border-bottom: 1px solid rgba(255,255,255,.35); }
+  :root[data-motion="reduce"] .haiku .w, :root[data-motion="reduce"] .haiku-dot, :root[data-motion="reduce"] .poem-next { opacity: 1; filter: none; transform: none; }
   :root[data-motion="reduce"] .haiku-arc .base, :root[data-motion="reduce"] .logo .arc { stroke-dashoffset: 0; }
   :root[data-motion="reduce"] .haiku-stage .frame-in { clip-path: none; }
   @keyframes rise { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: none; } }
@@ -310,7 +299,7 @@
     *, *::before, *::after { animation: none !important; transition: none !important; }
     .card:hover, .btn:hover, .choice:hover { transform: none; }
     .ico * { stroke-dashoffset: 0; }
-    .haiku .w, .haiku-dot, .haiku-note { opacity: 1; filter: none; transform: none; }
+    .haiku .w, .haiku-dot, .poem-next { opacity: 1; filter: none; transform: none; }
     .haiku-arc .base, .logo .arc { stroke-dashoffset: 0; }
     .haiku-stage .frame-in { clip-path: none; }
   }
@@ -323,7 +312,7 @@
 <a class="skip" href="#main">דלג לתוכן</a>
 <div class="wrap">
   <header class="top no-print">
-    <a class="brand" href="#start" aria-label="מנוע התאמה, לדף הפתיחה">
+    <a class="brand" href="#poem" aria-label="מנוע התאמה, לדף הבית">
       <svg class="logo" viewBox="0 0 48 48" aria-hidden="true">
         <rect class="frame" x="3" y="3" width="42" height="42"/>
         <path class="arc" d="M11 31 C11 17, 24 17, 24 24 C24 31, 37 31, 37 17"/>
@@ -629,10 +618,10 @@
   }
 
   /* ========== מסכים ========== */
-  function viewStart() {
-    setNav("start");
+  function viewPoem() {
+    setNav("");
     main.innerHTML = `
-      <section class="enter">
+      <section class="enter poem">
         <div class="haiku-stage">
           <div class="frame-in" aria-hidden="true"></div>
           <h1 class="sr-only">מנוע התאמה לטכנולוגיה מסייעת</h1>
@@ -643,13 +632,29 @@
           </svg>
           <span class="haiku-dot" aria-hidden="true"></span>
         </div>
-        <div class="start-actions">
-          <a class="btn primary" href="#new">תיק חדש</a>
-          <a class="btn" href="#catalog">עיון בקטלוג</a>
-          <p class="lead">לרכזי נגישות באקדמיה. מתעדים צורך, ומקבלים פתרונות High-Tech ו-Low-Tech מדורגים ומנומקים.</p>
+        <p class="poem-next"><a href="#start">לפתיחה</a></p>
+      </section>`;
+  }
+
+  function viewStart() {
+    setNav("start");
+    main.innerHTML = `
+      <section class="enter">
+        <div class="hero panel" style="padding:0">
+          <div class="orb o1" aria-hidden="true"></div>
+          <div class="orb o2" aria-hidden="true"></div>
+          <div class="orb o3" aria-hidden="true"></div>
+          <div class="inner">
+            <span class="kicker rise-1">לרכזי נגישות באקדמיה</span>
+            <h1 class="rise-2">מהצורך של הסטודנט להתאמה מנומקת</h1>
+            <p class="lead rise-3">המנוע מתעד את צורכי הסטודנט, ומציג פתרונות High-Tech ו-Low-Tech מדורגים. לכל ציון יש פירוט שאפשר לבדוק, ולכן ההחלטה נשארת אצלכם.</p>
+            <div class="row rise-3" style="margin-top:24px">
+              <a class="btn primary" href="#new">תיק חדש</a>
+              <a class="btn" href="#catalog">עיון בקטלוג</a>
+            </div>
+          </div>
         </div>
 
-        <div class="start-fine">
         <h2>החזון</h2>
         <div class="panel"><p style="font-size:1.14em">סטודנט עם צורך מיוחד צריך להגיע להתאמה מהירה, מדויקת ומנומקת. היום הידע מפוזר בין קטלוגים, נייר וזיכרון אישי. הכלי מרכז אותו במקום אחד, כך שכל המלצה ניתנת לבדיקה.</p></div>
 
@@ -671,7 +676,6 @@
           <p>לא מאבחן ולא מחליף חוות דעת של פסיכולוג, רופא או ועדת התאמות.</p>
           <p>לא מחליט על זכאות למימון. מרכז הזכויות הוא מדריך לבדיקה בלבד.</p>
           <p class="warn">מחירים, מקורות ותאריכי אימות בקטלוג עדיין לא אומתו. כל פריט מסומן בהתאם.</p>
-        </div>
         </div>
       </section>`;
   }
@@ -1234,7 +1238,7 @@
 
   /* ========== ניתוב, לפי hash פשוט ========== */
   function render() {
-    const h = (location.hash || "#start").slice(1);
+    const h = (location.hash || "#poem").slice(1);
     let m;
     applySettings();
     if ((m = h.match(/^case-(c[a-z0-9]+)$/))) viewCase(m[1]);
@@ -1243,7 +1247,8 @@
     else if ((m = h.match(/^results-(c[a-z0-9]+)$/))) viewResults(m[1]);
     else if ((m = h.match(/^tech-(c[a-z0-9]+)-([a-z0-9-]+)$/))) viewTech(m[1], m[2]);
     else switch (h) {
-      case "start": case "": viewStart(); break;
+      case "poem": case "": viewPoem(); break;
+      case "start": viewStart(); break;
       case "home": viewHome(); break;
       case "new": viewNew(); break;
       case "catalog": viewCatalog(); break;
