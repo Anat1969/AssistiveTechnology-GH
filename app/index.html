@@ -171,7 +171,7 @@
   .pill-verify { color: var(--amber-solid); font-size: .9em; }
   .empty { text-align: center; padding: 34px 18px; border: 1px dashed rgba(255,255,255,.55); }
 
-  /* אייקונים: קו אחד לכל האתר. ראייה = עדשה, קשב = חיוג. High-Tech = מסגרת דיגיטלית, Low-Tech = נקודה חמה */
+  /* אייקונים: קו אחד לכל האתר. ראייה = עדשה, קשב = חיוג, שמיעה = אוזן, ספקטרום = אינסוף. High-Tech = מסגרת דיגיטלית, Low-Tech = נקודה חמה */
   .ico { width: 52px; height: 52px; flex: none; overflow: visible; }
   .ico * { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 1.4s var(--ease) forwards; }
   .ico .fill { fill: var(--warm); stroke: none; stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
@@ -323,10 +323,22 @@
     { id: "stayfocusd", name: "חוסם אתרים ומסיחים", latin: "StayFocusd (תוסף Chrome)", tier: "High", domain: "attention", coverage: "partial", envs: ["home"], severity: ["mid", "high"], forWhom: "סטודנט שנסחף לרשתות חברתיות בזמן למידה.", limits: "רק בדפדפן Chrome. לא חוסם יישומים אחרים.", note: "" },
     { id: "fidget", name: "קוביית פידג'ט", latin: "Fidget cube", tier: "Low", domain: "attention", coverage: "partial", envs: ["lecture", "home"], severity: ["low", "mid"], forWhom: "סטודנט שצריך להפנות מתח ידיים כדי להישאר ממוקד.", limits: "עלול להסיח את הסביבה. לא מתאים לכל הקשר.", note: "" },
     { id: "weekly-planner", name: "לוח תכנון שבועי מודפס", latin: "Printed weekly planner", tier: "Low", domain: "attention", coverage: "full", envs: ["home"], severity: ["mid", "high"], forWhom: "סטודנט שצריך מבנה שבועי נראה לעין.", limits: "דורש עדכון ידני.", note: "" },
-    { id: "notion", name: "תוכנת ניהול משימות", latin: "Notion", tier: "High", domain: "attention", coverage: "partial", envs: ["home", "lab"], severity: ["mid"], forWhom: "סטודנט שצריך לנהל משימות ותאריכי הגשה במקום אחד.", limits: "עקומת למידה. אינה מטפלת בהסחות ישירות.", note: "" }
+    { id: "notion", name: "תוכנת ניהול משימות", latin: "Notion", tier: "High", domain: "attention", coverage: "partial", envs: ["home", "lab"], severity: ["mid"], forWhom: "סטודנט שצריך לנהל משימות ותאריכי הגשה במקום אחד.", limits: "עקומת למידה. אינה מטפלת בהסחות ישירות.", note: "" },
+    { id: "live-transcribe", name: "תמלול חי בטלפון", latin: "Live Transcribe (Google)", tier: "High", domain: "hearing", coverage: "full", envs: ["lecture", "home", "lab"], severity: ["mid", "high"], forWhom: "סטודנט עם לקות שמיעה שצריך לקרוא בזמן אמת מה נאמר בהרצאה או בשיחה.", limits: "תלוי באיכות הקול ובמרחק מהדובר. מונחים מקצועיים עלולים להשתבש.", note: "יש לבדוק את איכות התמלול בעברית ואת מדיניות הפרטיות לפני המלצה." },
+    { id: "fm-system", name: "מיקרופון אלחוטי למרצה", latin: "Remote microphone system (FM / Roger)", tier: "High", domain: "hearing", coverage: "full", envs: ["lecture", "exam", "lab"], severity: ["mid", "high"], forWhom: "סטודנט עם מכשיר שמיעה או שתל, שמאבד את קול המרצה ברעש הכיתה.", limits: "דורש תיאום עם המרצה בכל שיעור. מחיר גבוה יחסית.", note: "יש לוודא תאימות למכשיר השמיעה של הסטודנט, מול קלינאית התקשורת." },
+    { id: "live-captions", name: "כתוביות חיות בשיעור מקוון", latin: "Live captions (Teams / Zoom)", tier: "High", domain: "hearing", coverage: "partial", envs: ["lecture", "home"], severity: ["low", "mid"], forWhom: "סטודנט שלומד בשיעורים מקוונים או מוקלטים ומתקשה לעקוב אחר הדיבור.", limits: "רק בשיעור מקוון. איכות הכתוביות בעברית משתנה.", note: "יש לבדוק שהכתוביות מופעלות ברישיון של המוסד." },
+    { id: "front-seat", name: "ישיבה קדמית מול המרצה", latin: "Preferential seating", tier: "Low", domain: "hearing", coverage: "partial", envs: ["lecture", "exam"], severity: ["low", "mid"], forWhom: "סטודנט שנעזר בקריאת שפתיים ובקרבה למקור הקול.", limits: "לא מספיק לבד בלקות בינונית וחמורה.", note: "" },
+    { id: "written-instructions", name: "הנחיות מבחן בכתב", latin: "Written exam instructions", tier: "Low", domain: "hearing", coverage: "full", envs: ["exam"], severity: ["low", "mid", "high"], forWhom: "סטודנט שעלול לפספס הודעות בעל פה במהלך מבחן.", limits: "דורש תיאום עם מחלקת הבחינות מראש.", note: "" },
+    { id: "vibrating-alarm", name: "שעון מעורר רוטט", latin: "Vibrating alarm clock", tier: "Low", domain: "hearing", coverage: "partial", envs: ["home"], severity: ["high"], forWhom: "סטודנט חירש או כבד שמיעה שלא שומע צלצול רגיל.", limits: "פותר רק השכמה ותזכורות. לא עוזר בלמידה עצמה.", note: "" },
+    { id: "noise-cancel", name: "אוזניות מבטלות רעש", latin: "Active noise-cancelling headphones", tier: "High", domain: "autism", coverage: "full", envs: ["lecture", "home", "lab"], severity: ["mid", "high"], forWhom: "סטודנט עם רגישות חושית לרעש, שמוצף בכיתה או בספרייה.", limits: "במבחן נדרש אישור מיוחד. שימוש רציף ארוך עלול להעייף.", note: "יש לבדוק עם הסטודנט אם עדיף ביטול רעש מלא או חלקי." },
+    { id: "tiimo", name: "אפליקציית סדר יום חזותי", latin: "Tiimo", tier: "High", domain: "autism", coverage: "partial", envs: ["home"], severity: ["low", "mid"], forWhom: "סטודנט שצריך מבנה יום צפוי, עם תזכורות ומעברים מוכנים מראש.", limits: "דורש הגדרה ראשונית. ממשק באנגלית.", note: "יש לבדוק את מסלול התשלום ואת שפת הממשק לפני המלצה." },
+    { id: "visual-schedule", name: "לוח זמנים חזותי מודפס", latin: "Printed visual schedule", tier: "Low", domain: "autism", coverage: "full", envs: ["home", "lecture"], severity: ["mid", "high"], forWhom: "סטודנט שמתקשה במעברים ובשינויים לא צפויים במערכת השעות.", limits: "דורש עדכון ידני בכל שינוי.", note: "" },
+    { id: "quiet-room", name: "חדר נפרד ושקט למבחן", latin: "Separate low-stimulus exam room", tier: "Low", domain: "autism", coverage: "full", envs: ["exam"], severity: ["mid", "high"], forWhom: "סטודנט שמוצף מרעש, תאורה או תנועה באולם בחינות גדול.", limits: "תלוי בזמינות חדרים ובמשגיח. דורש אישור ועדת התאמות.", note: "" },
+    { id: "social-story", name: "תסריט כתוב למצב חדש", latin: "Social narrative", tier: "Low", domain: "autism", coverage: "partial", envs: ["home", "exam"], severity: ["low", "mid"], forWhom: "סטודנט שחרד ממצב לא מוכר: מבחן ראשון, שעת קבלה או עבודה בקבוצה.", limits: "יעיל רק כשהתסריט נכתב יחד עם הסטודנט.", note: "" },
+    { id: "need-card", name: "כרטיס צורך מוכן לפנייה", latin: "Self-advocacy card", tier: "Low", domain: "autism", coverage: "partial", envs: ["lecture", "exam"], severity: ["mid", "high"], forWhom: "סטודנט שמתקשה לנסח בעל פה בקשה למרצה או למשגיח, במיוחד בלחץ.", limits: "לא מחליף אישור רשמי של ועדת התאמות.", note: "" }
   ];
 
-  const DOMAIN = { vision: "ראייה", attention: "קשב וריכוז" };
+  const DOMAIN = { vision: "ראייה", attention: "קשב וריכוז", hearing: "שמיעה", autism: "ספקטרום אוטיסטי" };
   const ENV = { lecture: "הרצאה", exam: "מבחן", home: "לימוד ביתי", lab: "מעבדה או ספרייה" };
   const SEV = { low: "נמוכה", mid: "בינונית", high: "גבוהה" };
   const PREF = { High: "High-Tech", Low: "Low-Tech", both: "שניהם" };
@@ -340,10 +352,24 @@
   const KEY = "matchApp.v1";
 
   /* ========== אייקונים ========== */
-  // קטגוריה: ראייה = עדשה ועיגולים. קשב = חיוג וסימנים.
+  // קטגוריה: ראייה = עדשה ועיגולים. קשב = חיוג וסימנים. שמיעה = אוזן. ספקטרום = לולאת אינסוף (הסמל שהקהילה האוטיסטית מעדיפה על פני חלק פאזל).
   // רמה: High-Tech = מסגרת דיגיטלית בפינות. Low-Tech = נקודה חמה בפינה.
   const ICONS = {
     vision: '<path d="M4 24 C12 12, 36 12, 44 24 C36 36, 12 36, 4 24 Z"/><circle cx="24" cy="24" r="6"/><circle class="fill" cx="24" cy="24" r="2.4"/>',
+    hearing: '<path d="M14 20 C14 11 20 6 27 6 C34 6 38 11 38 18 C38 25 31 27 30 33 C29 39 25 42 20 42"/><path d="M21 20 C21 15 24 12 28 12 C32 12 33 16 32 19"/><path d="M8 16 C6 20 6 24 8 28"/>',
+    autism: '<path d="M24 24 C19 15 7 15 7 24 C7 33 19 33 24 24 C29 15 41 15 41 24 C41 33 29 33 24 24 Z"/><circle class="fill" cx="24" cy="24" r="2.2"/>',
+    "live-transcribe": '<rect x="14" y="4" width="20" height="40" rx="3"/><path d="M19 13 H29 M19 19 H29 M19 25 H25 M22 38 H26"/>',
+    "fm-system": '<rect x="18" y="6" width="12" height="20" rx="6"/><path d="M12 22 C12 30 17 34 24 34 C31 34 36 30 36 22 M24 34 V42 M17 42 H31"/>',
+    "live-captions": '<rect x="6" y="8" width="36" height="26" rx="2"/><path d="M12 24 H36 M12 29 H28 M18 42 H30 M24 34 V42"/>',
+    "front-seat": '<rect x="17" y="6" width="14" height="7"/><path d="M8 24 H16 M20 24 H28 M32 24 H40 M8 33 H16 M20 33 H28 M32 33 H40 M8 42 H16 M20 42 H28 M32 42 H40"/><circle class="fill" cx="24" cy="20" r="2"/>',
+    "written-instructions": '<path d="M12 6 H30 L38 14 V42 H12 Z M30 6 V14 H38 M18 22 H32 M18 28 H32 M18 34 H26"/>',
+    "vibrating-alarm": '<circle cx="24" cy="24" r="12"/><path d="M24 17 V24 L29 27 M6 18 V30 M11 14 V34 M42 18 V30 M37 14 V34"/>',
+    "noise-cancel": '<path d="M8 30 V24 C8 14 15 8 24 8 C33 8 40 14 40 24 V30"/><rect x="6" y="28" width="8" height="14" rx="2"/><rect x="34" y="28" width="8" height="14" rx="2"/>',
+    tiimo: '<rect x="14" y="4" width="20" height="40" rx="3"/><rect x="18" y="10" width="12" height="7"/><rect x="18" y="20" width="12" height="7"/><rect x="18" y="30" width="8" height="5"/>',
+    "visual-schedule": '<rect x="8" y="8" width="12" height="12"/><rect x="28" y="8" width="12" height="12"/><rect x="8" y="28" width="12" height="12"/><rect x="28" y="28" width="12" height="12"/><path d="M11 14 L14 17 L18 11"/>',
+    "quiet-room": '<rect x="13" y="6" width="22" height="36"/><circle class="fill" cx="30" cy="25" r="1.8"/><path d="M6 42 H42"/>',
+    "social-story": '<path d="M6 10 H30 V26 H16 L10 32 V26 H6 Z"/><path d="M34 18 H42 V34 H38 V40 L32 34 H20 V30"/>',
+    "need-card": '<rect x="6" y="12" width="36" height="24" rx="2"/><path d="M12 20 H28 M12 26 H34 M12 31 H22"/><circle cx="35" cy="20" r="2"/>',
     attention: '<circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="8"/><path d="M24 4 V9 M24 39 V44 M4 24 H9 M39 24 H44"/><path d="M24 24 L32 16"/>',
     nvda: '<rect x="6" y="8" width="36" height="24" rx="2"/><path d="M12 16 H28 M12 22 H34 M12 28 H22 M18 40 H30 M24 32 V40"/>',
     magnifier: '<circle cx="21" cy="21" r="13"/><path d="M31 31 L42 42 M15 21 H27"/>',
@@ -655,6 +681,8 @@
             <div class="choices" role="radiogroup" aria-describedby="e-domain">
               ${choice("domain", "vision", "ראייה", v.domain === "vision")}
               ${choice("domain", "attention", "קשב וריכוז", v.domain === "attention")}
+              ${choice("domain", "hearing", "שמיעה", v.domain === "hearing")}
+              ${choice("domain", "autism", "ספקטרום אוטיסטי", v.domain === "autism")}
             </div>
             <div id="e-domain" class="err" role="alert"></div>
           </fieldset>
@@ -1003,6 +1031,8 @@
               <button type="button" aria-pressed="true" data-d="all">הכול</button>
               <button type="button" aria-pressed="false" data-d="vision">ראייה</button>
               <button type="button" aria-pressed="false" data-d="attention">קשב וריכוז</button>
+              <button type="button" aria-pressed="false" data-d="hearing">שמיעה</button>
+              <button type="button" aria-pressed="false" data-d="autism">ספקטרום אוטיסטי</button>
             </div>
             <div class="seg" role="group" aria-label="סינון לפי רמה">
               <button type="button" aria-pressed="true" data-t="all">כל הרמות</button>
@@ -1098,6 +1128,8 @@
           <div class="legend-grid">
             <div class="legend-item">${icon("vision", "", "ico-sm")}<span>ראייה: עדשה ועיגולים.</span></div>
             <div class="legend-item">${icon("attention", "", "ico-sm")}<span>קשב וריכוז: חיוג וסימנים.</span></div>
+            <div class="legend-item">${icon("hearing", "", "ico-sm")}<span>שמיעה: אוזן וגל קול.</span></div>
+            <div class="legend-item">${icon("autism", "", "ico-sm")}<span>ספקטרום אוטיסטי: לולאת אינסוף, הסמל שהקהילה בוחרת.</span></div>
           </div>
           <h3 class="plain" style="margin:0">רמזור התאמה</h3>
           <div class="legend-grid">
@@ -1134,7 +1166,7 @@
       let parsed;
       try { parsed = JSON.parse(raw); } catch (e) { return toast("הטקסט אינו גיבוי תקין. לא בוצע שחזור."); }
       if (!parsed || !Array.isArray(parsed.cases)) return toast("המבנה אינו תואם. נדרש שדה cases שהוא רשימה.");
-      const clean = parsed.cases.filter(c => c && typeof c.id === "string" && (c.domain === "vision" || c.domain === "attention"));
+      const clean = parsed.cases.filter(c => c && typeof c.id === "string" && Object.prototype.hasOwnProperty.call(DOMAIN, c.domain));
       db = Object.assign(blank(), { ...parsed, cases: clean.map(c => ({ ...c, added: Array.isArray(c.added) ? c.added.filter(x => techById(x)) : [], notes: c.notes || "" })) });
       if (save()) { toast(`שוחזרו ${clean.length} תיקים`); location.hash = "home"; }
     });
