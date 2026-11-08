@@ -262,20 +262,18 @@
 
   .enter { animation: rise .7s var(--ease) both; }
   /* דף פתיחה: הלוגו בגדול. מסגרת = גבול הדף, קו = הדרך מהצורך להתאמה, נקודה = הסטודנט. ההייקו עולה עם הקו. */
-  .haiku-stage { position: relative; min-height: 300px; justify-content: center; border-radius: 0; background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 70%, rgba(201,154,134,.28) 100%); box-shadow: var(--e3), var(--hi); overflow: hidden; display: flex; flex-direction: column; padding: clamp(26px, 4vw, 44px) clamp(26px, 5vw, 56px); }
+  .haiku-stage { position: relative; min-height: min(74vh, 640px); justify-content: flex-start; border-radius: 0; background: linear-gradient(160deg, var(--card) 0%, var(--card-2) 70%, rgba(201,154,134,.28) 100%); box-shadow: var(--e3), var(--hi); overflow: hidden; display: flex; flex-direction: column; padding: clamp(26px, 4vw, 44px) clamp(26px, 5vw, 56px); }
   .haiku-stage .frame-in { position: absolute; inset: 14px; border: 2px solid rgba(255,255,255,.85); pointer-events: none; clip-path: inset(0 0 100% 0); animation: frameIn 1.4s var(--ease) .1s forwards; }
   .haiku-stage .kicker { position: relative; animation: rise .9s var(--ease) .2s both; }
-  .haiku { position: relative; margin: 18px 0 0; font-family: "Frank Ruhl Libre", "David", serif; font-weight: 400; font-size: clamp(1.6rem, 3.2vw, 2.4rem); line-height: 1.6; margin: 0; direction: rtl; text-align: right; }
+  .haiku { position: relative; margin: 18px 0 0; font-family: "Frank Ruhl Libre", "David", serif; font-weight: 400; font-size: clamp(1.15rem, 1.9vw, 1.5rem); line-height: 1.75; margin: 0; direction: rtl; text-align: right; }
   .haiku .ln { display: block; }
-  .haiku .ln:nth-child(2) { padding-inline-start: 1.6em; }
-  .haiku .ln:nth-child(3) { padding-inline-start: 3.2em; }
   .haiku .w { display: inline-block; opacity: 0; filter: blur(10px); transform: translateY(.25em); animation: wordIn 1.1s var(--ease) forwards; animation-delay: calc(.6s + var(--d) * .32s); }
   .haiku .ln:nth-child(2) .w:last-child { color: var(--warm-strong, #f1c6b3); }
-  .haiku-arc { position: absolute; left: 5%; top: 14%; width: 40%; height: 72%; overflow: visible; pointer-events: none; }
+  .haiku-arc { position: absolute; left: 6%; bottom: 8%; width: 58%; height: 58%; overflow: visible; pointer-events: none; }
   .haiku-arc path { fill: none; stroke-linecap: round; }
   .haiku-arc .base { stroke: #fff; stroke-width: .2; stroke-dasharray: 1; stroke-dashoffset: 1; animation: draw 3.2s var(--ease) .6s forwards; }
   .haiku-arc .glow { stroke: var(--warm); stroke-width: .34; stroke-dasharray: .07 .93; stroke-dashoffset: 1; opacity: 0; animation: travel 7s linear 4s infinite; }
-  .haiku-dot { position: absolute; left: 25%; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 0 rgba(201,154,134,.55); opacity: 0; animation: dotIn .8s var(--ease) 2.2s forwards, breathe 4.5s ease-in-out 3s infinite; }
+  .haiku-dot { position: absolute; left: 35%; bottom: 37%; width: 16px; height: 16px; margin: 0 0 -8px -8px; border-radius: 50%; background: var(--warm); box-shadow: 0 0 0 0 rgba(201,154,134,.55); opacity: 0; animation: dotIn .8s var(--ease) 2.2s forwards, breathe 4.5s ease-in-out 3s infinite; }
   .haiku-note { position: relative; margin: 14px 0 0; max-width: 36ch; color: var(--muted); font-size: .95em; animation: rise .9s var(--ease) 3.4s both; }
   @keyframes frameIn { to { clip-path: inset(0 0 0 0); } }
   @keyframes wordIn { to { opacity: 1; filter: none; transform: none; } }
@@ -284,7 +282,18 @@
   @keyframes travel { 0% { stroke-dashoffset: 1; opacity: 0; } 8% { opacity: 1; } 55% { opacity: 1; } 62%,100% { stroke-dashoffset: 0; opacity: 0; } }
   .start-actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin: 22px 0 0; }
   .start-actions .lead { margin: 0; color: var(--muted); max-width: 60ch; }
-  @media (max-width: 640px) { .haiku .ln:nth-child(2) { padding-inline-start: .6em; } .haiku .ln:nth-child(3) { padding-inline-start: 1.2em; } .haiku-stage { min-height: 0; justify-content: flex-start; padding-bottom: 150px; } .haiku-arc { left: 0; top: auto; bottom: 18px; width: 100%; height: 120px; } .haiku-dot { left: 50%; top: auto; bottom: 78px; margin: 0 0 -8px -8px; } }
+  @media (max-width: 640px) { .haiku-stage { min-height: 68vh; } .haiku-arc { left: 5%; bottom: 6%; width: 90%; height: 40%; } .haiku-dot { left: 50%; bottom: 26%; } }
+  .start-actions .btn { padding: 8px 16px; font-size: .86em; }
+  .start-actions .lead { font-size: .84em; }
+  .start-fine { font-size: .84em; margin-top: 10px; }
+  .start-fine h2 { font-size: 1.12em; margin: 26px 0 10px; }
+  .start-fine h3 { font-size: 1.02em; }
+  .start-fine .panel { padding: 16px 18px; }
+  .start-fine .panel p[style] { font-size: 1em !important; }
+  .start-fine .step { grid-template-columns: 40px 1fr; padding: 14px; gap: 12px; }
+  .start-fine .step .n { width: 32px; height: 32px; font-size: 1em; }
+  .start-fine .steps { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+  .start-fine .stack { gap: 6px; }
   :root[data-motion="reduce"] .haiku .w, :root[data-motion="reduce"] .haiku-dot, :root[data-motion="reduce"] .haiku-note { opacity: 1; filter: none; transform: none; }
   :root[data-motion="reduce"] .haiku-arc .base, :root[data-motion="reduce"] .logo .arc { stroke-dashoffset: 0; }
   :root[data-motion="reduce"] .haiku-stage .frame-in { clip-path: none; }
@@ -640,6 +649,7 @@
           <p class="lead">לרכזי נגישות באקדמיה. מתעדים צורך, ומקבלים פתרונות High-Tech ו-Low-Tech מדורגים ומנומקים.</p>
         </div>
 
+        <div class="start-fine">
         <h2>החזון</h2>
         <div class="panel"><p style="font-size:1.14em">סטודנט עם צורך מיוחד צריך להגיע להתאמה מהירה, מדויקת ומנומקת. היום הידע מפוזר בין קטלוגים, נייר וזיכרון אישי. הכלי מרכז אותו במקום אחד, כך שכל המלצה ניתנת לבדיקה.</p></div>
 
@@ -661,6 +671,7 @@
           <p>לא מאבחן ולא מחליף חוות דעת של פסיכולוג, רופא או ועדת התאמות.</p>
           <p>לא מחליט על זכאות למימון. מרכז הזכויות הוא מדריך לבדיקה בלבד.</p>
           <p class="warn">מחירים, מקורות ותאריכי אימות בקטלוג עדיין לא אומתו. כל פריט מסומן בהתאם.</p>
+        </div>
         </div>
       </section>`;
   }
